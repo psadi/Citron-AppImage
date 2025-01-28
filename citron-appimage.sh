@@ -75,6 +75,7 @@ chmod +x ./lib4bin
 xvfb-run -a -- ./lib4bin -p -v -e -s -k \
 	/usr/bin/citron* \
 	/usr/lib/libGLX* \
+	/usr/lib/libGL.so* \
 	/usr/lib/libEGL* \
 	/usr/lib/dri/* \
 	/usr/lib/libvulkan* \
