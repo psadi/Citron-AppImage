@@ -5,7 +5,8 @@ set -e
 export APPIMAGE_EXTRACT_AND_RUN=1
 export ARCH="$(uname -m)"
 LIB4BN="https://raw.githubusercontent.com/VHSgunzo/sharun/refs/heads/main/lib4bin"
-URUNTIME=$(wget -q https://api.github.com/repos/VHSgunzo/uruntime/releases -O - \
+URUNTIME=$(wget --retry-connrefused --tries=30 \
+	https://api.github.com/repos/VHSgunzo/uruntime/releases -O - \
 	| sed 's/[()",{} ]/\n/g' | grep -oi "https.*appimage.*dwarfs.*$ARCH$" | head -1)
 ICON="https://git.citron-emu.org/Citron/Citron/raw/branch/master/dist/citron.svg"
 
