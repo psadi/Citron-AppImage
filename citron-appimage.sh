@@ -63,7 +63,6 @@ git clone https://git.citron-emu.org/Citron/Citron.git ./citron
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_CXX_FLAGS="$ARCH_FLAGS -Wno-error" \
 		-DCMAKE_C_FLAGS="$ARCH_FLAGS" \
-		-DCITRON_ENABLE_PGO_OPTIMIZE=ON \
 		-DCMAKE_SYSTEM_PROCESSOR="$(uname -m)" \
 		-DCMAKE_BUILD_TYPE=Release
 	ninja
