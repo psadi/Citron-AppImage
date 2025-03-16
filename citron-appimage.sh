@@ -26,7 +26,8 @@ if ! git clone 'https://git.citron-emu.org/Citron/Citron.git' ./citron; then
 	git clone 'https://github.com/pkgforge-community/git.citron-emu.org-Citron-Citron.git' ./citron
 fi
 
-( cd ./citron
+(
+	cd ./citron
 	if [ "$DEVEL" = 'true' ]; then
 		CITRON_TAG="$(git rev-parse --short HEAD)"
 		echo "Making nightly \"$CITRON_TAG\" build"
@@ -37,7 +38,7 @@ fi
 		git checkout "$CITRON_TAG"
 		VERSION="$(echo "$CITRON_TAG" | awk -F'-' '{print $1}')"
 	fi
-	git submodule update --init --recursive
+	git submodule update --init --recursive -j$(nproc)
 
 	#Replaces 'boost::asio::io_service' with 'boost::asio::io_context' for compatibility with Boost.ASIO versions 1.74.0 and later
 	find src -type f -name '*.cpp' -exec sed -i 's/boost::asio::io_service/boost::asio::io_context/g' {} \;
@@ -68,7 +69,7 @@ fi
 		-DCMAKE_BUILD_TYPE=Release
 	ninja
 	sudo ninja install
-	echo "$VERSION" > ~/version
+	echo "$VERSION" >~/version
 )
 rm -rf ./citron
 VERSION="$(cat ~/version)"
@@ -117,7 +118,7 @@ cd ..
 wget -q "$URUNTIME" -O ./uruntime
 chmod +x ./uruntime
 
-# Keep the mount point (speeds up launch time) 
+# Keep the mount point (speeds up launch time)
 sed -i 's|URUNTIME_MOUNT=[0-9]|URUNTIME_MOUNT=0|' ./uruntime
 
 #Add udpate info to runtime
