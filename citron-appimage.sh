@@ -20,7 +20,7 @@ if [ "$ARCH" = 'x86_64' ]; then
 	fi
 else
 	echo "Making aarch64 build of citron"
-	ARCH_FLAGS="-march=generic -mtune=generic -O3"
+	ARCH_FLAGS="-march=armv8-a -mtune=generic -O3"
 fi
 
 UPINFO="gh-releases-zsync|$(echo "$GITHUB_REPOSITORY" | tr '/' '|')|latest|*$ARCH.AppImage.zsync"
