@@ -83,11 +83,11 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4.1.9
         with:
-          name: citron-optimized-appimage-x86_64
+          name: citron-optimized-appimage-${{ matrix.arch }}
 
       - uses: actions/download-artifact@v4.1.9
         with:
-          name: citron-normal-appimage-x86_64
+          name: citron-normal-appimage-${{ matrix.arch }}
 
       - uses: actions/download-artifact@v4.1.9
         with:
