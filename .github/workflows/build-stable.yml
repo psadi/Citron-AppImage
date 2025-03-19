@@ -65,8 +65,8 @@ jobs:
           cat ~/version
           echo "APP_VERSION=$(cat ~/version)" >> "${GITHUB_ENV}"
 
-      - name: Upload version file
-        if: ${{ matrix.optimized == false }}
+      - name: Upload version file # we need this action to run only once. 
+        if: ${{ matrix.optimized == true }}
         uses: actions/upload-artifact@v4.6.1
         with:
           name: version
