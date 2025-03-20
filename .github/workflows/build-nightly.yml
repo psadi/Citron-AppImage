@@ -23,11 +23,10 @@ jobs:
             optimized: true
             name: "Citron Build (Optimized)"
             arch: x86_64
-          # TODO: Debug ARM builds (fails with intel-vulkan dep for arch on arm
-          # - runs-on: ubuntu-24.04-arm
-          #   name: "Citron Build (Normal)"
-          #   optimized: false
-          #   arch: aarch64
+          - runs-on: ubuntu-24.04-arm
+            name: "Citron Build (Normal)"
+            optimized: false
+            arch: aarch64
     container: ghcr.io/pkgforge-dev/archlinux:latest
     steps:
       - uses: actions/checkout@v4
@@ -36,88 +35,7 @@ jobs:
 
       - name: Install dependencies
         if: always()
-        run: |
-          sed -i 's/DownloadUser/#DownloadUser/g' /etc/pacman.conf
-          pacman -Syu --noconfirm base-devel strace patchelf curl wget \
-            desktop-file-utils git mesa xorg-server-xvfb \
-            vulkan-radeon vulkan-intel vulkan-nouveau pulseaudio pulseaudio-alsa pipewire-audio
-          sudo pacman -Syu --noconfirm \
-            zsync \
-            catch2 \
-            enet \
-            gamemode \
-            cmake \
-            gcc13 \
-            glslang \
-            glu \
-            hidapi \
-            xcb-util-wm \
-            xcb-util-image \
-            xcb-util-renderutil \
-            libdecor \
-            libxkbcommon-x11 \
-            libxi \
-            libxss \
-            nasm \
-            qt6-tools \
-            qt6-base \
-            qt6-multimedia \
-            qt6-wayland \
-            mbedtls2 \
-            fmt \
-            nlohmann-json \
-            aom \
-            libass \
-            haskell-gnutls \
-            sdl2 \
-            libva \
-            meson \
-            ninja \
-            x264 \
-            x265 \
-            numactl \
-            libvpx \
-            libfdk-aac \
-            libopusenc \
-            ffmpeg \
-            svt-av1 \
-            dav1d \
-            boost \
-            clang \
-            vulkan-headers \
-            ffmpeg4.4 \
-            zip \
-            unzip \
-            boost-libs \
-            doxygen \
-            python-pip \
-            libzip \
-            mbedtls \
-            libzip \
-            qt6ct
-
-      - name: Install debloated llvm-libs
-        run: |
-          LLVM_URL="https://github.com/pkgforge-dev/llvm-libs-debloated/releases/download/continuous/llvm-libs-nano-x86_64.pkg.tar.zst"
-          wget --retry-connrefused --tries=30 "$LLVM_URL" -O ./llvm-libs.pkg.tar.zst
-          pacman -U --noconfirm ./llvm-libs.pkg.tar.zst
-          rm -f ./llvm-libs.pkg.tar.zst
-
-      - name: Install iculess libxml2 and qt6-core
-        run: |
-          QT6_URL="https://github.com/pkgforge-dev/llvm-libs-debloated/releases/download/continuous/qt6-base-iculess-x86_64.pkg.tar.zst"
-          LIBXML_URL="https://github.com/pkgforge-dev/llvm-libs-debloated/releases/download/continuous/libxml2-iculess-x86_64.pkg.tar.zst"
-          wget --retry-connrefused --tries=30 "$QT6_URL" -O ./qt6-base-iculess.pkg.tar.zst
-          wget --retry-connrefused --tries=30 "$LIBXML_URL" -O ./libxml2-iculess.pkg.tar.zst
-          pacman -U --noconfirm ./qt6-base-iculess.pkg.tar.zst ./libxml2-iculess.pkg.tar.zst
-          rm -f ./qt6-base-iculess.pkg.tar.zst ./libxml2-iculess.pkg.tar.zst
-
-      - name: Install ffmpeg mini
-        run: |
-          FFMPEG_URL="https://github.com/pkgforge-dev/llvm-libs-debloated/releases/download/continuous/ffmpeg-mini-x86_64.pkg.tar.zst"
-          wget --retry-connrefused --tries=30 "$FFMPEG_URL" -O ./ffmpeg-mini-x86_64.pkg.tar.zst
-          pacman -U --noconfirm ./ffmpeg-mini-x86_64.pkg.tar.zst
-          rm -f ./ffmpeg-mini-x86_64.pkg.tar.zst
+        run: chmod +x ./get-dependencies.sh && ./get-dependencies.sh
 
       - name: Compile Citron (Normal)
         if: ${{ matrix.optimized == false }}
@@ -148,11 +66,11 @@ jobs:
           echo "APP_VERSION=$(cat ~/version)" >> "${GITHUB_ENV}"
 
       - name: Upload version file
-        if: ${{ matrix.optimized == false }}
         uses: actions/upload-artifact@v4.6.1
         with:
           name: version
           path: ~/version
+          overwrite: true
 
   release:
     name: "release"
@@ -171,9 +89,9 @@ jobs:
         with:
           name: citron-normal-appimage-x86_64
 
-      # - uses: actions/download-artifact@v4.1.9
-      #   with:
-      #     name: citron-normal-appimage-aarch64
+      - uses: actions/download-artifact@v4.1.9
+        with:
+          name: citron-normal-appimage-aarch64
 
       - uses: actions/download-artifact@v4.1.9
         with:
@@ -183,6 +101,14 @@ jobs:
         run: |
           export VERSION="$(cat version)"
           echo "APP_VERSION=${VERSION}" >> "${GITHUB_ENV}"
+
+      - name: Del Previous Release
+        run: |
+          gh release delete "nightly" --repo "${GITHUB_REPOSITORY}" --cleanup-tag  -y
+          sleep 5
+        env:
+          GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        continue-on-error: true
 
       - uses: softprops/action-gh-release@v2
         with:
